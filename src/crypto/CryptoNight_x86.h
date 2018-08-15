@@ -34,7 +34,9 @@
 #endif
 
 
-#include "common/crypto/keccak.h"
+
+
+#include "keccak.h"
 #include "crypto/CryptoNight.h"
 #include "crypto/CryptoNight_constants.h"
 #include "crypto/CryptoNight_monero.h"

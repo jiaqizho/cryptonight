@@ -5,8 +5,6 @@
 
 
 
-
-
 typedef void (*cn_hash_fun)(const uint8_t *input, size_t size, uint8_t *output, cryptonight_ctx **ctx);
 
 cn_hash_fun hash_fun_select(Algo algorithm, AlgoVariant av, Variant variant)
