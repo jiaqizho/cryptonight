@@ -24,8 +24,8 @@ set(HEADERS_CRYPTO
 
         )
 
-
-set(HEADERS_CRYPTO "${HEADERS_CRYPTO}" src/crypto/CryptoNight_x86.h)
+set(HEADERS_CRYPTO "${HEADERS_CRYPTO}" src/crypto/CryptoNight_arm.h)
+# set(HEADERS_CRYPTO "${HEADERS_CRYPTO}" src/crypto/CryptoNight_x86.h)
 
 
 set(SOURCES_CRYPTO
@@ -44,9 +44,7 @@ set(SOURCES_CRYPTO
 
 # main
 
-set(HEADERS
-        src/xmrig.h
-        )
+set(HEADERS src/xmrig.h)
 
 include_directories(src)
 

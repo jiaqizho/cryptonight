@@ -27,8 +27,8 @@
 #define __CRYPTONIGHT_ARM_H__
 
 
-#include "common/crypto/keccak.h"
-#include "common/utils/mm_malloc.h"
+#include "crypto/keccak.h"
+#include "utils/mm_malloc.h"
 #include "crypto/CryptoNight.h"
 #include "crypto/CryptoNight_constants.h"
 #include "crypto/CryptoNight_monero.h"
