@@ -1,4 +1,3 @@
-#include <iostream>
 
 #include "crypto/CryptoNight_x86.h"
 #include "xmrig.h"
@@ -6,188 +5,10 @@
 #include <assert.h>
 #include <inttypes.h>
 #include <iostream>
+#include "lib.h"
 
 using namespace std;
-
-typedef void (*cn_hash_fun)(const uint8_t *input, size_t size, uint8_t *output, cryptonight_ctx **ctx);
-
-cn_hash_fun hash_fun_select(xmrig::Algo algorithm, xmrig::AlgoVariant av, xmrig::Variant variant)
-{
-
-    static const cn_hash_fun func_table[xmrig::VARIANT_MAX * 10 * 3] = {
-            cryptonight_single_hash<xmrig::CRYPTONIGHT, false, xmrig::VARIANT_0>,
-            cryptonight_double_hash<xmrig::CRYPTONIGHT, false, xmrig::VARIANT_0>,
-            cryptonight_single_hash<xmrig::CRYPTONIGHT, true,  xmrig::VARIANT_0>,
-            cryptonight_double_hash<xmrig::CRYPTONIGHT, true,  xmrig::VARIANT_0>,
-            cryptonight_triple_hash<xmrig::CRYPTONIGHT, false, xmrig::VARIANT_0>,
-            cryptonight_quad_hash<xmrig::CRYPTONIGHT,   false, xmrig::VARIANT_0>,
-            cryptonight_penta_hash<xmrig::CRYPTONIGHT,  false, xmrig::VARIANT_0>,
-            cryptonight_triple_hash<xmrig::CRYPTONIGHT, true,  xmrig::VARIANT_0>,
-            cryptonight_quad_hash<xmrig::CRYPTONIGHT,   true,  xmrig::VARIANT_0>,
-            cryptonight_penta_hash<xmrig::CRYPTONIGHT,  true,  xmrig::VARIANT_0>,
-
-            cryptonight_single_hash<xmrig::CRYPTONIGHT, false, xmrig::VARIANT_1>,
-            cryptonight_double_hash<xmrig::CRYPTONIGHT, false, xmrig::VARIANT_1>,
-            cryptonight_single_hash<xmrig::CRYPTONIGHT, true,  xmrig::VARIANT_1>,
-            cryptonight_double_hash<xmrig::CRYPTONIGHT, true,  xmrig::VARIANT_1>,
-            cryptonight_triple_hash<xmrig::CRYPTONIGHT, false, xmrig::VARIANT_1>,
-            cryptonight_quad_hash<xmrig::CRYPTONIGHT,   false, xmrig::VARIANT_1>,
-            cryptonight_penta_hash<xmrig::CRYPTONIGHT,  false, xmrig::VARIANT_1>,
-            cryptonight_triple_hash<xmrig::CRYPTONIGHT, true,  xmrig::VARIANT_1>,
-            cryptonight_quad_hash<xmrig::CRYPTONIGHT,   true,  xmrig::VARIANT_1>,
-            cryptonight_penta_hash<xmrig::CRYPTONIGHT,  true,  xmrig::VARIANT_1>,
-
-            nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, // VARIANT_TUBE
-
-            cryptonight_single_hash<xmrig::CRYPTONIGHT, false, xmrig::VARIANT_XTL>,
-            cryptonight_double_hash<xmrig::CRYPTONIGHT, false, xmrig::VARIANT_XTL>,
-            cryptonight_single_hash<xmrig::CRYPTONIGHT, true,  xmrig::VARIANT_XTL>,
-            cryptonight_double_hash<xmrig::CRYPTONIGHT, true,  xmrig::VARIANT_XTL>,
-            cryptonight_triple_hash<xmrig::CRYPTONIGHT, false, xmrig::VARIANT_XTL>,
-            cryptonight_quad_hash<xmrig::CRYPTONIGHT,   false, xmrig::VARIANT_XTL>,
-            cryptonight_penta_hash<xmrig::CRYPTONIGHT,  false, xmrig::VARIANT_XTL>,
-            cryptonight_triple_hash<xmrig::CRYPTONIGHT, true,  xmrig::VARIANT_XTL>,
-            cryptonight_quad_hash<xmrig::CRYPTONIGHT,   true,  xmrig::VARIANT_XTL>,
-            cryptonight_penta_hash<xmrig::CRYPTONIGHT,  true,  xmrig::VARIANT_XTL>,
-
-            cryptonight_single_hash<xmrig::CRYPTONIGHT, false, xmrig::VARIANT_MSR>,
-            cryptonight_double_hash<xmrig::CRYPTONIGHT, false, xmrig::VARIANT_MSR>,
-            cryptonight_single_hash<xmrig::CRYPTONIGHT, true,  xmrig::VARIANT_MSR>,
-            cryptonight_double_hash<xmrig::CRYPTONIGHT, true,  xmrig::VARIANT_MSR>,
-            cryptonight_triple_hash<xmrig::CRYPTONIGHT, false, xmrig::VARIANT_MSR>,
-            cryptonight_quad_hash<xmrig::CRYPTONIGHT,   false, xmrig::VARIANT_MSR>,
-            cryptonight_penta_hash<xmrig::CRYPTONIGHT,  false, xmrig::VARIANT_MSR>,
-            cryptonight_triple_hash<xmrig::CRYPTONIGHT, true,  xmrig::VARIANT_MSR>,
-            cryptonight_quad_hash<xmrig::CRYPTONIGHT,   true,  xmrig::VARIANT_MSR>,
-            cryptonight_penta_hash<xmrig::CRYPTONIGHT,  true,  xmrig::VARIANT_MSR>,
-
-            nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, // VARIANT_XHV
-
-            cryptonight_single_hash<xmrig::CRYPTONIGHT, false, xmrig::VARIANT_XAO>,
-            cryptonight_double_hash<xmrig::CRYPTONIGHT, false, xmrig::VARIANT_XAO>,
-            cryptonight_single_hash<xmrig::CRYPTONIGHT, true,  xmrig::VARIANT_XAO>,
-            cryptonight_double_hash<xmrig::CRYPTONIGHT, true,  xmrig::VARIANT_XAO>,
-            cryptonight_triple_hash<xmrig::CRYPTONIGHT, false, xmrig::VARIANT_XAO>,
-            cryptonight_quad_hash<xmrig::CRYPTONIGHT,   false, xmrig::VARIANT_XAO>,
-            cryptonight_penta_hash<xmrig::CRYPTONIGHT,  false, xmrig::VARIANT_XAO>,
-            cryptonight_triple_hash<xmrig::CRYPTONIGHT, true,  xmrig::VARIANT_XAO>,
-            cryptonight_quad_hash<xmrig::CRYPTONIGHT,   true,  xmrig::VARIANT_XAO>,
-            cryptonight_penta_hash<xmrig::CRYPTONIGHT,  true,  xmrig::VARIANT_XAO>,
-
-            cryptonight_single_hash<xmrig::CRYPTONIGHT, false, xmrig::VARIANT_RTO>,
-            cryptonight_double_hash<xmrig::CRYPTONIGHT, false, xmrig::VARIANT_RTO>,
-            cryptonight_single_hash<xmrig::CRYPTONIGHT, true,  xmrig::VARIANT_RTO>,
-            cryptonight_double_hash<xmrig::CRYPTONIGHT, true,  xmrig::VARIANT_RTO>,
-            cryptonight_triple_hash<xmrig::CRYPTONIGHT, false, xmrig::VARIANT_RTO>,
-            cryptonight_quad_hash<xmrig::CRYPTONIGHT,   false, xmrig::VARIANT_RTO>,
-            cryptonight_penta_hash<xmrig::CRYPTONIGHT,  false, xmrig::VARIANT_RTO>,
-            cryptonight_triple_hash<xmrig::CRYPTONIGHT, true,  xmrig::VARIANT_RTO>,
-            cryptonight_quad_hash<xmrig::CRYPTONIGHT,   true,  xmrig::VARIANT_RTO>,
-            cryptonight_penta_hash<xmrig::CRYPTONIGHT,  true,  xmrig::VARIANT_RTO>,
-
-#       ifndef XMRIG_NO_AEON
-            cryptonight_single_hash<xmrig::CRYPTONIGHT_LITE, false, xmrig::VARIANT_0>,
-            cryptonight_double_hash<xmrig::CRYPTONIGHT_LITE, false, xmrig::VARIANT_0>,
-            cryptonight_single_hash<xmrig::CRYPTONIGHT_LITE, true,  xmrig::VARIANT_0>,
-            cryptonight_double_hash<xmrig::CRYPTONIGHT_LITE, true,  xmrig::VARIANT_0>,
-            cryptonight_triple_hash<xmrig::CRYPTONIGHT_LITE, false, xmrig::VARIANT_0>,
-            cryptonight_quad_hash<xmrig::CRYPTONIGHT_LITE,   false, xmrig::VARIANT_0>,
-            cryptonight_penta_hash<xmrig::CRYPTONIGHT_LITE,  false, xmrig::VARIANT_0>,
-            cryptonight_triple_hash<xmrig::CRYPTONIGHT_LITE, true,  xmrig::VARIANT_0>,
-            cryptonight_quad_hash<xmrig::CRYPTONIGHT_LITE,   true,  xmrig::VARIANT_0>,
-            cryptonight_penta_hash<xmrig::CRYPTONIGHT_LITE,  true,  xmrig::VARIANT_0>,
-
-            cryptonight_single_hash<xmrig::CRYPTONIGHT_LITE, false, xmrig::VARIANT_1>,
-            cryptonight_double_hash<xmrig::CRYPTONIGHT_LITE, false, xmrig::VARIANT_1>,
-            cryptonight_single_hash<xmrig::CRYPTONIGHT_LITE, true,  xmrig::VARIANT_1>,
-            cryptonight_double_hash<xmrig::CRYPTONIGHT_LITE, true,  xmrig::VARIANT_1>,
-            cryptonight_triple_hash<xmrig::CRYPTONIGHT_LITE, false, xmrig::VARIANT_1>,
-            cryptonight_quad_hash<xmrig::CRYPTONIGHT_LITE,   false, xmrig::VARIANT_1>,
-            cryptonight_penta_hash<xmrig::CRYPTONIGHT_LITE,  false, xmrig::VARIANT_1>,
-            cryptonight_triple_hash<xmrig::CRYPTONIGHT_LITE, true,  xmrig::VARIANT_1>,
-            cryptonight_quad_hash<xmrig::CRYPTONIGHT_LITE,   true,  xmrig::VARIANT_1>,
-            cryptonight_penta_hash<xmrig::CRYPTONIGHT_LITE,  true,  xmrig::VARIANT_1>,
-
-            nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, // VARIANT_TUBE
-            nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, // VARIANT_XTL
-            nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, // VARIANT_MSR
-            nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, // VARIANT_XHV
-            nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, // VARIANT_XAO
-            nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, // VARIANT_RTO
-#       else
-    nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-#       endif
-
-#       ifndef XMRIG_NO_SUMO
-            cryptonight_single_hash<xmrig::CRYPTONIGHT_HEAVY, false, xmrig::VARIANT_0>,
-            cryptonight_double_hash<xmrig::CRYPTONIGHT_HEAVY, false, xmrig::VARIANT_0>,
-            cryptonight_single_hash<xmrig::CRYPTONIGHT_HEAVY, true,  xmrig::VARIANT_0>,
-            cryptonight_double_hash<xmrig::CRYPTONIGHT_HEAVY, true,  xmrig::VARIANT_0>,
-            cryptonight_triple_hash<xmrig::CRYPTONIGHT_HEAVY, false, xmrig::VARIANT_0>,
-            cryptonight_quad_hash<xmrig::CRYPTONIGHT_HEAVY,   false, xmrig::VARIANT_0>,
-            cryptonight_penta_hash<xmrig::CRYPTONIGHT_HEAVY,  false, xmrig::VARIANT_0>,
-            cryptonight_triple_hash<xmrig::CRYPTONIGHT_HEAVY, true,  xmrig::VARIANT_0>,
-            cryptonight_quad_hash<xmrig::CRYPTONIGHT_HEAVY,   true,  xmrig::VARIANT_0>,
-            cryptonight_penta_hash<xmrig::CRYPTONIGHT_HEAVY,  true,  xmrig::VARIANT_0>,
-
-            nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, // VARIANT_1
-
-            cryptonight_single_hash<xmrig::CRYPTONIGHT_HEAVY, false, xmrig::VARIANT_TUBE>,
-            cryptonight_double_hash<xmrig::CRYPTONIGHT_HEAVY, false, xmrig::VARIANT_TUBE>,
-            cryptonight_single_hash<xmrig::CRYPTONIGHT_HEAVY, true,  xmrig::VARIANT_TUBE>,
-            cryptonight_double_hash<xmrig::CRYPTONIGHT_HEAVY, true,  xmrig::VARIANT_TUBE>,
-            cryptonight_triple_hash<xmrig::CRYPTONIGHT_HEAVY, false, xmrig::VARIANT_TUBE>,
-            cryptonight_quad_hash<xmrig::CRYPTONIGHT_HEAVY,   false, xmrig::VARIANT_TUBE>,
-            cryptonight_penta_hash<xmrig::CRYPTONIGHT_HEAVY,  false, xmrig::VARIANT_TUBE>,
-            cryptonight_triple_hash<xmrig::CRYPTONIGHT_HEAVY, true,  xmrig::VARIANT_TUBE>,
-            cryptonight_quad_hash<xmrig::CRYPTONIGHT_HEAVY,   true,  xmrig::VARIANT_TUBE>,
-            cryptonight_penta_hash<xmrig::CRYPTONIGHT_HEAVY,  true,  xmrig::VARIANT_TUBE>,
-
-            nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, // VARIANT_XTL
-            nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, // VARIANT_MSR
-
-            cryptonight_single_hash<xmrig::CRYPTONIGHT_HEAVY, false, xmrig::VARIANT_XHV>,
-            cryptonight_double_hash<xmrig::CRYPTONIGHT_HEAVY, false, xmrig::VARIANT_XHV>,
-            cryptonight_single_hash<xmrig::CRYPTONIGHT_HEAVY, true,  xmrig::VARIANT_XHV>,
-            cryptonight_double_hash<xmrig::CRYPTONIGHT_HEAVY, true,  xmrig::VARIANT_XHV>,
-            cryptonight_triple_hash<xmrig::CRYPTONIGHT_HEAVY, false, xmrig::VARIANT_XHV>,
-            cryptonight_quad_hash<xmrig::CRYPTONIGHT_HEAVY,   false, xmrig::VARIANT_XHV>,
-            cryptonight_penta_hash<xmrig::CRYPTONIGHT_HEAVY,  false, xmrig::VARIANT_XHV>,
-            cryptonight_triple_hash<xmrig::CRYPTONIGHT_HEAVY, true,  xmrig::VARIANT_XHV>,
-            cryptonight_quad_hash<xmrig::CRYPTONIGHT_HEAVY,   true,  xmrig::VARIANT_XHV>,
-            cryptonight_penta_hash<xmrig::CRYPTONIGHT_HEAVY,  true,  xmrig::VARIANT_XHV>,
-
-            nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, // VARIANT_XAO
-            nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, // VARIANT_RTO
-#       else
-    nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-#       endif
-    };
-
-    const size_t index = xmrig::VARIANT_MAX * 10 * algorithm + 10 * variant + av - 1;
-
-#   ifndef NDEBUG
-    cn_hash_fun func = func_table[index];
-
-    return func;
-#   else
-    return func_table[index];
-#   endif
-}
+using namespace xmrig;
 
 // blob : 0707b7b2cbdb05e8af0310798932ad273fe81c61883b0a877ce3c0c262ce5f6a5e21b40063b7c600000000c10ad46d7c16835c7188c60fdcbed0a25ce8b7bf3b201fc55c0d8c75600d87d203
 // target : 7b5e0400
@@ -249,10 +70,6 @@ const static uint8_t test_output_v1[160] = {
         0x00, 0x66, 0x10, 0x07, 0xF1, 0x19, 0x06, 0x3A, 0x6C, 0xFF, 0xEE, 0xB2, 0x40, 0xE5, 0x88, 0x2B,
         0x6C, 0xAB, 0x6B, 0x1D, 0x88, 0xB8, 0x44, 0x25, 0xF4, 0xEA, 0xB7, 0xEC, 0xBA, 0x12, 0x8A, 0x24
 };
-
-
-
-
 
 struct cryptonight_ctx;
 

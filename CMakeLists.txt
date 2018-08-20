@@ -22,6 +22,7 @@ endif()
 
 # lib
 set(HEADERS_CRYPTO
+        src/lib.h
         src/utils/c_str.h
         src/utils/mm_malloc.h
         src/utils/Mem.h
@@ -39,7 +40,6 @@ set(HEADERS_CRYPTO
         src/crypto/hash.h
         src/crypto/skein_port.h
         src/crypto/soft_aes.h
-
         )
 
 #set(HEADERS_CRYPTO "${HEADERS_CRYPTO}" src/crypto/CryptoNight_arm.h)
@@ -55,6 +55,7 @@ set(SOURCES_CRYPTO
         src/crypto/c_blake256.c
         src/crypto/c_jh.c
         src/crypto/c_skein.c
+        src/lib.cpp
         )
 
 
@@ -69,6 +70,6 @@ set(HEADERS src/xmrig.h)
 include_directories(src)
 
 
-ADD_LIBRARY(cryptonight ${HEADERS} ${HEADERS_CRYPTO} ${SOURCES_CRYPTO} )
+ADD_LIBRARY(cryptonight SHARED ${HEADERS} ${HEADERS_CRYPTO} ${SOURCES_CRYPTO}  )
 
 add_executable(xmrig_cryptonight ${HEADERS} ${HEADERS_CRYPTO} ${SOURCES_CRYPTO}  src/main.cpp)

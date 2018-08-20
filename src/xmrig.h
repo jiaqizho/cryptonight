@@ -7,7 +7,6 @@
 
 
 
-
 namespace xmrig {
 
     enum Algo {
@@ -46,6 +45,7 @@ namespace xmrig {
         VARIANT_RTO  = 7,  // Modified CryptoNight variant 1 (Arto only)
         VARIANT_MAX
     };
+
 
 }
 
