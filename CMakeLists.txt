@@ -68,4 +68,7 @@ set(HEADERS src/xmrig.h)
 
 include_directories(src)
 
+
+ADD_LIBRARY(cryptonight ${HEADERS} ${HEADERS_CRYPTO} ${SOURCES_CRYPTO} )
+
 add_executable(xmrig_cryptonight ${HEADERS} ${HEADERS_CRYPTO} ${SOURCES_CRYPTO}  src/main.cpp)
