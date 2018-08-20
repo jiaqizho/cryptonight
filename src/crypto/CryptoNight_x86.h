@@ -41,7 +41,7 @@
 #include "crypto/CryptoNight_constants.h"
 #include "crypto/CryptoNight_monero.h"
 #include "crypto/soft_aes.h"
-
+#include <iostream>
 
 extern "C"
 {
@@ -442,6 +442,7 @@ inline void cryptonight_single_hash(const uint8_t *__restrict__ input, size_t si
 
     xmrig::keccak(input, size, ctx[0]->state);
 
+
     VARIANT1_INIT(0)
 
     cn_explode_scratchpad<ALGO, MEM, SOFT_AES>((__m128i*) ctx[0]->state, (__m128i*) ctx[0]->memory);
@@ -521,10 +522,14 @@ inline void cryptonight_single_hash(const uint8_t *__restrict__ input, size_t si
         }
     }
 
+
+
+
     cn_implode_scratchpad<ALGO, MEM, SOFT_AES>((__m128i*) ctx[0]->memory, (__m128i*) ctx[0]->state);
 
     xmrig::keccakf(h0, 24);
     extra_hashes[ctx[0]->state[0] & 3](ctx[0]->state, 200, output);
+
 }
 
 

@@ -6,6 +6,9 @@
 #include <inttypes.h>
 #include <iostream>
 #include "lib.h"
+#include <sstream>
+#define __STDC_FORMAT_MACROS
+
 
 using namespace std;
 using namespace xmrig;
@@ -73,15 +76,141 @@ const static uint8_t test_output_v1[160] = {
 
 struct cryptonight_ctx;
 
+alignas(16) uint8_t m_blob[96];
 
-void print_uint8_t(uint8_t x) {
-    printf("%" PRIu8, x);
+uint32_t *nonce(size_t index)
+{
+    return reinterpret_cast<uint32_t*>(m_blob + (index * 76) + 39);
 }
 
+void hexstring2char(std::string hex ,uint8_t* out)
+{
+    std::stringstream convertStream;
+
+    // if you have something like "0c 45 a1 bf" -> delete blanks
+    hex.erase( std::remove(hex.begin(), hex.end(), ' '), hex.end() );
+
+    int offset = 0, i = 0;
+    while (offset < hex.length())
+    {
+        unsigned int buffer;
+
+        convertStream << std::hex << hex.substr(offset, 2);
+        convertStream >> std::hex >> buffer;
+
+        out[i] = static_cast<unsigned char>(buffer);
+
+        offset += 2;
+        i++;
+
+        // empty the stringstream
+        convertStream.str(std::string());
+        convertStream.clear();
+    }
+}
+
+
+static inline unsigned char hf_hex2bin(char c, bool &err)
+{
+    if (c >= '0' && c <= '9') {
+        return c - '0';
+    }
+    else if (c >= 'a' && c <= 'f') {
+        return c - 'a' + 0xA;
+    }
+    else if (c >= 'A' && c <= 'F') {
+        return c - 'A' + 0xA;
+    }
+
+    err = true;
+    return 0;
+}
+
+
+bool fromHex(const char* in, unsigned int len, unsigned char* out)
+{
+    bool error = false;
+    for (unsigned int i = 0; i < len; i += 2) {
+        out[i / 2] = (hf_hex2bin(in[i], error) << 4) | hf_hex2bin(in[i + 1], error);
+
+        if (error) {
+            return false;
+        }
+    }
+    return true;
+}
+
+static inline uint64_t toDiff(uint64_t target) { return 0xFFFFFFFFFFFFFFFFULL / target; }
+
+
+bool getTarget(const char *target,uint64_t* m_target)
+{
+    uint64_t m_diff;
+    if (!target) {
+        return false;
+    }
+
+    const size_t len = strlen(target);
+
+    if (len <= 8) {
+        uint32_t tmp = 0;
+        char str[8];
+        memcpy(str, target, len);
+
+        if (!fromHex(str, 8, reinterpret_cast<unsigned char*>(&tmp)) || tmp == 0) {
+            return false;
+        }
+
+        *m_target = 0xFFFFFFFFFFFFFFFFULL / (0xFFFFFFFFULL / static_cast<uint64_t>(tmp));
+    }
+    else if (len <= 16) {
+        *m_target = 0;
+        char str[16];
+        memcpy(str, target, len);
+
+        if (!fromHex(str, 16, reinterpret_cast<unsigned char*>(&m_target)) || *m_target == 0) {
+            return false;
+        }
+    }
+    else {
+        return false;
+    }
+
+    m_diff = toDiff(*m_target);
+    return true;
+}
+
+bool getBlob(const char *blob)
+{
+    size_t m_size;
+    if (!blob) {
+        return false;
+    }
+
+    m_size = strlen(blob);
+    if (m_size % 2 != 0) {
+        return false;
+    }
+
+    m_size /= 2;
+    if (m_size < 76 || m_size >= sizeof(m_blob)) {
+        return false;
+    }
+
+    if (!fromHex(blob, (unsigned int) m_size * 2, m_blob)) {
+        return false;
+    }
+    return true;
+}
+
+
+
 int main() {
-    size_t N = 5;
+    /*
+
+    size_t N = 1;
     uint8_t m_hash[32];
-    cryptonight_ctx *m_ctx[5];
+    cryptonight_ctx *m_ctx[1];
     MemInfo m_memory = Mem::create(m_ctx, xmrig::CRYPTONIGHT, N);
 
     cn_hash_fun f = hash_fun_select(xmrig::CRYPTONIGHT,xmrig::AV_SINGLE,xmrig::VARIANT_1);
@@ -89,6 +218,64 @@ int main() {
 
 
     printf("%d\n", memcmp(m_hash, test_output_v1, sizeof m_hash) == 0);
+
+    */
+
+
+
+    /*
+
+    *nonce(0) = 0xffffffffU / 1 * (0 + 0);
+    for (int b = 0; b < 100; ++b) {
+
+        *nonce(0) += 1;
+        printf("%lu\n", (unsigned long)*nonce(0));
+    }
+    printf("%lu\n", (unsigned long)*nonce(0));
+
+     */
+
+
+//    17856774067714358098
+    // get blob and target
+    getBlob("070797beebdb0511b894835ecfb5870adfe095d74bb821b84777eb4621f39d009193a2fd1c9c9800000000878824fe102a68b855ff6a1616bc6fc39bc48b1c783eff52ea29c1eb08d3b03504");
+    uint64_t target;
+    getTarget("7b5e0400",&target);
+
+
+    // init hash and function
+    uint8_t m_hash[32];
+    cryptonight_ctx *m_ctx[1];
+    Mem::create(m_ctx, xmrig::CRYPTONIGHT, 1);
+    cn_hash_fun f = hash_fun_select(xmrig::CRYPTONIGHT,xmrig::AV_SINGLE,xmrig::VARIANT_1);
+
+
+
+    for (int i = 0; i < 96; ++i) {
+        printf("blob %d: %u\n",i, m_blob[i]);
+    }
+
+    size_t nonce = 0;
+
+    while (true){
+//        printf("state 1 : %d\n", m_ctx[0]->state[0]);
+//        printf("state 2 : %d\n", m_ctx[0]->state[1]);
+
+        f(m_blob, 76, m_hash, m_ctx);
+
+        printf("mhash : %llu\n", *reinterpret_cast<uint64_t*>(m_hash + 24));
+
+        if (*reinterpret_cast<uint64_t*>(m_hash + 24) < target) {
+            printf("nonce : %zu\n", nonce);
+            printf("nonce : %u\n", m_hash);
+            break;
+        }
+
+        nonce += 1;
+    }
+
+
+
 
     return 0;
 }
