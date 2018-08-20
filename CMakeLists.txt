@@ -22,6 +22,9 @@ endif()
 
 # lib
 set(HEADERS_CRYPTO
+        src/utils/c_str.h
+        src/utils/mm_malloc.h
+        src/utils/Mem.h
         src/crypto/keccak.h
         src/crypto/Algorithm.h
         src/crypto/c_blake256.h
@@ -44,13 +47,14 @@ set(HEADERS_CRYPTO "${HEADERS_CRYPTO}" src/crypto/CryptoNight_x86.h)
 
 
 set(SOURCES_CRYPTO
+        src/utils/Mem.cpp
+        src/utils/Mem_unix.cpp
         src/crypto/keccak.cpp
         src/crypto/Algorithm.cpp
         src/crypto/c_groestl.c
         src/crypto/c_blake256.c
         src/crypto/c_jh.c
         src/crypto/c_skein.c
-
         )
 
 
