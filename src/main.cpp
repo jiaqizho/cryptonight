@@ -78,35 +78,9 @@ struct cryptonight_ctx;
 
 alignas(16) uint8_t m_blob[96];
 
-uint32_t *nonce(size_t index)
+uint32_t * nonce(size_t index)
 {
     return reinterpret_cast<uint32_t*>(m_blob + (index * 76) + 39);
-}
-
-void hexstring2char(std::string hex ,uint8_t* out)
-{
-    std::stringstream convertStream;
-
-    // if you have something like "0c 45 a1 bf" -> delete blanks
-    hex.erase( std::remove(hex.begin(), hex.end(), ' '), hex.end() );
-
-    int offset = 0, i = 0;
-    while (offset < hex.length())
-    {
-        unsigned int buffer;
-
-        convertStream << std::hex << hex.substr(offset, 2);
-        convertStream >> std::hex >> buffer;
-
-        out[i] = static_cast<unsigned char>(buffer);
-
-        offset += 2;
-        i++;
-
-        // empty the stringstream
-        convertStream.str(std::string());
-        convertStream.clear();
-    }
 }
 
 
@@ -222,22 +196,30 @@ int main() {
     */
 
 
+    /**
 
-    /*
+    getBlob("070797beebdb0511b894835ecfb5870adfe095d74bb821b84777eb4621f39d009193a2fd1c9c9800000000878824fe102a68b855ff6a1616bc6fc39bc48b1c783eff52ea29c1eb08d3b03504");
 
-    *nonce(0) = 0xffffffffU / 1 * (0 + 0);
-    for (int b = 0; b < 100; ++b) {
+    uint32_t * blob_test = nonce(0);
 
-        *nonce(0) += 1;
-        printf("%lu\n", (unsigned long)*nonce(0));
+    for (int i = 0; i < 96; ++i) {
+        printf("olob %d: %zu , ",i, m_blob[i]);
+        printf("blob %d: %zu\n",i, blob_test[i]);
     }
+
+
+    printf("%lu\n", (unsigned long)*nonce(0));
+    *nonce(0) = 0xffffffffU / 1 * (0 + 0);
+//    for (int b = 0; b < 100; ++b) {
+//
+//        *nonce(0) += 1;
+//        printf("%lu\n", (unsigned long)*nonce(0));
+//    }
     printf("%lu\n", (unsigned long)*nonce(0));
 
-     */
+    */
 
 
-//    17856774067714358098
-    // get blob and target
     getBlob("070797beebdb0511b894835ecfb5870adfe095d74bb821b84777eb4621f39d009193a2fd1c9c9800000000878824fe102a68b855ff6a1616bc6fc39bc48b1c783eff52ea29c1eb08d3b03504");
     uint64_t target;
     getTarget("7b5e0400",&target);
@@ -250,31 +232,28 @@ int main() {
     cn_hash_fun f = hash_fun_select(xmrig::CRYPTONIGHT,xmrig::AV_SINGLE,xmrig::VARIANT_1);
 
 
+    *nonce(0) = 0xffffffffU / 1 * (0 + 0);
 
-    for (int i = 0; i < 96; ++i) {
-        printf("blob %d: %u\n",i, m_blob[i]);
-    }
-
-    size_t nonce = 0;
-
+    printf("target : %llu" ,target);
     while (true){
 //        printf("state 1 : %d\n", m_ctx[0]->state[0]);
 //        printf("state 2 : %d\n", m_ctx[0]->state[1]);
 
         f(m_blob, 76, m_hash, m_ctx);
 
-        printf("mhash : %llu\n", *reinterpret_cast<uint64_t*>(m_hash + 24));
 
+        printf("mhash : %llu  , distinct : %llu  \n", *reinterpret_cast<uint64_t*>(m_hash + 24) , (*reinterpret_cast<uint64_t*>(m_hash + 24) - target )  );
+
+
+//        3220778876
         if (*reinterpret_cast<uint64_t*>(m_hash + 24) < target) {
-            printf("nonce : %zu\n", nonce);
+//            printf("nonce : %zu\n", nonce);
             printf("nonce : %u\n", m_hash);
             break;
         }
 
-        nonce += 1;
+        *nonce(0) += 1;
     }
-
-
 
 
     return 0;

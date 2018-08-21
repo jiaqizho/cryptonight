@@ -25,7 +25,7 @@
 
 #include <stdlib.h>
 #include <sys/mman.h>
-#import <mach/vm_statistics.h>
+// #import <mach/vm_statistics.h>
 
 #include "utils/mm_malloc.h"
 #include "xmrig.h"
