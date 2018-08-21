@@ -84,76 +84,6 @@ uint32_t * nonce(size_t index)
 }
 
 
-static inline unsigned char hf_hex2bin(char c, bool &err)
-{
-    if (c >= '0' && c <= '9') {
-        return c - '0';
-    }
-    else if (c >= 'a' && c <= 'f') {
-        return c - 'a' + 0xA;
-    }
-    else if (c >= 'A' && c <= 'F') {
-        return c - 'A' + 0xA;
-    }
-
-    err = true;
-    return 0;
-}
-
-
-bool fromHex(const char* in, unsigned int len, unsigned char* out)
-{
-    bool error = false;
-    for (unsigned int i = 0; i < len; i += 2) {
-        out[i / 2] = (hf_hex2bin(in[i], error) << 4) | hf_hex2bin(in[i + 1], error);
-
-        if (error) {
-            return false;
-        }
-    }
-    return true;
-}
-
-static inline uint64_t toDiff(uint64_t target) { return 0xFFFFFFFFFFFFFFFFULL / target; }
-
-
-bool getTarget(const char *target,uint64_t* m_target)
-{
-    uint64_t m_diff;
-    if (!target) {
-        return false;
-    }
-
-    const size_t len = strlen(target);
-
-    if (len <= 8) {
-        uint32_t tmp = 0;
-        char str[8];
-        memcpy(str, target, len);
-
-        if (!fromHex(str, 8, reinterpret_cast<unsigned char*>(&tmp)) || tmp == 0) {
-            return false;
-        }
-
-        *m_target = 0xFFFFFFFFFFFFFFFFULL / (0xFFFFFFFFULL / static_cast<uint64_t>(tmp));
-    }
-    else if (len <= 16) {
-        *m_target = 0;
-        char str[16];
-        memcpy(str, target, len);
-
-        if (!fromHex(str, 16, reinterpret_cast<unsigned char*>(&m_target)) || *m_target == 0) {
-            return false;
-        }
-    }
-    else {
-        return false;
-    }
-
-    m_diff = toDiff(*m_target);
-    return true;
-}
-
 bool getBlob(const char *blob)
 {
     size_t m_size;
@@ -220,6 +150,8 @@ int main() {
     */
 
 
+    /**
+
     getBlob("070797beebdb0511b894835ecfb5870adfe095d74bb821b84777eb4621f39d009193a2fd1c9c9800000000878824fe102a68b855ff6a1616bc6fc39bc48b1c783eff52ea29c1eb08d3b03504");
     uint64_t target;
     getTarget("7b5e0400",&target);
@@ -254,6 +186,16 @@ int main() {
 
         *nonce(0) += 1;
     }
+
+
+
+     */
+
+
+    char output[36];
+    long *nonce;
+    cryptonight_pow("070797beebdb0511b894835ecfb5870adfe095d74bb821b84777eb4621f39d009193a2fd1c9c9800000000878824fe102a68b855ff6a1616bc6fc39bc48b1c783eff52ea29c1eb08d3b03504","7b5e0400",output,
+                    nonce);
 
 
     return 0;
