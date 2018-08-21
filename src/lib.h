@@ -29,7 +29,9 @@ bool getBlob(const char *blob,uint8_t * out);
 
 uint32_t * nonce(size_t index);
 
-void cryptonight_pow(const char *blob,const char *target,char *output,long* outnonce);
+extern "C" void cryptonight_pow(const char *blob,const char *target,char *output,uint32_t* outnonce);
+
+extern "C" void test_cryptonight_pow(const char *blob,const char *target,char *output,uint32_t* outnonce);
 
 #endif //XMRIG_CRYPTONIGHT_LIB_H
 

@@ -193,10 +193,12 @@ int main() {
 
 
     char output[36];
-    long *nonce;
-    cryptonight_pow("070797beebdb0511b894835ecfb5870adfe095d74bb821b84777eb4621f39d009193a2fd1c9c9800000000878824fe102a68b855ff6a1616bc6fc39bc48b1c783eff52ea29c1eb08d3b03504","7b5e0400",output,
+    uint32_t *nonce;
+    test_cryptonight_pow("070797beebdb0511b894835ecfb5870adfe095d74bb821b84777eb4621f39d009193a2fd1c9c9800000000878824fe102a68b855ff6a1616bc6fc39bc48b1c783eff52ea29c1eb08d3b03504","7b5e0400",output,
                     nonce);
 
+    cout<<"data : "<<output<<endl;
+    cout<<"nonce : "<<*nonce<<endl;
 
     return 0;
 }
