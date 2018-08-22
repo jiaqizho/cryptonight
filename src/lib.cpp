@@ -307,11 +307,6 @@ extern "C"  void cryptonight_pow(const char *blob,const char *target,char *outpu
     printf("boolean: %d\n", getBlob(blob,m_blob));
     getTarget(target,&m_target);
 
-//    for (int i = 0; i < 20; ++i) {
-//        printf("olob %d: %zu \n",i, m_blob[i]);
-//    }
-//    printf("target : %llu \n" ,target);
-
     cryptonight_ctx *m_ctx[1];
     Mem::create(m_ctx, xmrig::CRYPTONIGHT, 1);
     cn_hash_fun f = hash_fun_select(xmrig::CRYPTONIGHT,xmrig::AV_SINGLE,xmrig::VARIANT_1);
@@ -328,11 +323,7 @@ extern "C"  void cryptonight_pow(const char *blob,const char *target,char *outpu
 
             // output
             toHex(m_hash, 32, output);
-            cout<<"data : "<<output<<endl;
-
             memcpy(outnonce,nonce(m_blob),sizeof(uint32_t));
-            printf("nonce : %ld \n" , *outnonce);
-
             break;
         }
 
@@ -364,13 +355,8 @@ extern "C" void test_cryptonight_pow(const char *blob,const char *target,char *o
 
     f(m_blob, 76, m_hash, m_ctx);
 
-    printf("mhash : %llu  , distinct : %llu  , ", *reinterpret_cast<uint64_t*>(m_hash + 24) , (*reinterpret_cast<uint64_t*>(m_hash + 24) - m_target)  );
-    printf("nonce : %d \n" , *nonce(m_blob));
-
     toHex(m_hash, 32, output);
 
     memcpy(outnonce,nonce(m_blob),sizeof(uint32_t));
-    printf("nonce : %lu \n" , *outnonce);
-
 }
 

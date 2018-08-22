@@ -50,6 +50,8 @@ void Mem::allocate(MemInfo &info, bool enabled)
     }
 
 #   if defined(__APPLE__)
+
+#include "mach/vm_statistics.h"
     info.memory = static_cast<uint8_t*>(mmap(0, info.size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, VM_FLAGS_SUPERPAGE_SIZE_2MB, 0));
 #   elif defined(__FreeBSD__)
     info.memory = static_cast<uint8_t*>(mmap(0, info.size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_ALIGNED_SUPER | MAP_PREFAULT_READ, -1, 0));
