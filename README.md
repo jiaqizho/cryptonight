@@ -1,7 +1,6 @@
 # Cryptonight
 
 ------
-
 **an cryptonight implemention from xmrig.**
 
 > * An independent and decoupling cryptonight implement.
