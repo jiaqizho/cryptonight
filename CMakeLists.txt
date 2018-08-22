@@ -64,12 +64,10 @@ set(SOURCES_CRYPTO
 # open the ansni
 include(cmake/flags.cmake)
 
-
 set(HEADERS src/xmrig.h)
 
 include_directories(src)
 
-
 ADD_LIBRARY(cryptonight SHARED ${HEADERS} ${HEADERS_CRYPTO} ${SOURCES_CRYPTO}  )
 
-add_executable(xmrig_cryptonight ${HEADERS} ${HEADERS_CRYPTO} ${SOURCES_CRYPTO}  src/main.cpp)
+# add_executable(xmrig_cryptonight ${HEADERS} ${HEADERS_CRYPTO} ${SOURCES_CRYPTO}  src/main.cpp)
