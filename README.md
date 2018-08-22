@@ -1,4 +1,4 @@
-# Cryptonight
+Cryptonight
 ===========================
 **an cryptonight implemention from xmrig.**
 
@@ -25,5 +25,8 @@ make .
 ```
 #include "lib.h"
 cryptonight_pow(blob,target,output,outnonce);
-
 ```
+
+## Other
+
+will support windows soon
