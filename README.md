@@ -1,5 +1,4 @@
 # Cryptonight
-
 ------
 **an cryptonight implemention from xmrig.**
 
